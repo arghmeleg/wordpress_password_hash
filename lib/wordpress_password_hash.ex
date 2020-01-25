@@ -99,10 +99,9 @@ defmodule WordpressPasswordHash do
 
   defp encode64_1(i, input, output, count, value) when i < count do
     #     $value = ord($input[$i++]);
-    i = i + 1
 
-    # TODO aparently valu can be nil here sometimes????
     value = ord(String.at(input, i))
+    i = i + 1
 
     #     $output .= $this->itoa64[$value & 0x3f];
     output = output <> String.at(@itoa64, Bitwise.&&&(value, @hex_0x3f))
@@ -111,7 +110,7 @@ defmodule WordpressPasswordHash do
     #       $value |= ord($input[$i]) << 8;
     value =
       if i < count do
-        value = value || Bitwise.<<<(ord(String.at(input, i)), 8)
+        value = value + Bitwise.<<<(ord(String.at(input, i)), 8)
       else
         value
       end
@@ -121,7 +120,6 @@ defmodule WordpressPasswordHash do
 
     #     if ($i++ >= $count)
     #       break;
-    i = i + 1
 
     encode64_2(i, input, output, count, value)
   end
@@ -131,9 +129,11 @@ defmodule WordpressPasswordHash do
   defp encode64_2(i, input, output, count, value) when i < count do
     #     if ($i < $count)
     #       $value |= ord($input[$i]) << 16;
+    i = i + 1
+
     value =
       if i < count do
-        value || Bitwise.<<<(ord(String.at(input, i)), 16)
+        value + Bitwise.<<<(ord(String.at(input, i)), 16)
       else
         value
       end
@@ -143,7 +143,6 @@ defmodule WordpressPasswordHash do
 
     #     if ($i++ >= $count)
     #       break;
-    i = i + 1
     {i, output, value} = encode64_3(i, input, output, count, value)
 
     #     $output .= $this->itoa64[($value >> 18) & 0x3f];
@@ -158,6 +157,8 @@ defmodule WordpressPasswordHash do
   defp encode64_2(i, input, output, count, value), do: {i, output, value}
 
   defp encode64_3(i, input, output, count, value) when i < count do
+    i = i + 1
+
     output = output <> String.at(@itoa64, Bitwise.&&&(Bitwise.>>>(value, 18), @hex_0x3f))
     {i, output, value}
   end
